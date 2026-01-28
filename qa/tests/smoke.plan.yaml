@@ -8,7 +8,7 @@ setup:
 
 steps:
   - action: navigate
-    url: "{{BASE_URL}}/"
+    url: "/"
 
   - action: wait
     selector: "h1"
