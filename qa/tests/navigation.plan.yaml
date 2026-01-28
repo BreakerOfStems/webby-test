@@ -1,0 +1,54 @@
+name: Navigation Header Test
+description: Verify navigation header is visible with logo and nav links
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='nav-header']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "navigation-header-visible"
+
+  - action: assert
+    selector: "[data-testid='nav-header']"
+
+  - action: assert
+    selector: "[data-testid='nav-logo']"
+    contains: "Webby Test"
+
+  - action: assert
+    selector: "[data-testid='nav-link-home']"
+    contains: "Home"
+
+  - action: assert
+    selector: "[data-testid='nav-link-about']"
+    contains: "About"
+
+  - action: assert
+    selector: "[data-testid='nav-link-contact']"
+    contains: "Contact"
+
+  - action: screenshot
+    name: "navigation-links-verified"
+
+  - action: click
+    selector: "[data-testid='nav-logo']"
+
+  - action: wait
+    selector: "h1"
+    timeout: 5000
+
+  - action: assert
+    selector: "h1"
+    contains: "Webby Test"
+
+  - action: screenshot
+    name: "logo-click-returns-home"

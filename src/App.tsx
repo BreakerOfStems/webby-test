@@ -1,8 +1,10 @@
 import Counter from "./Counter";
+import Header from "./Header";
 
 function App() {
   return (
     <div className="app">
+      <Header />
       <header>
         <h1>Webby Test</h1>
         <p>A simple React application for testing the Claude GitHub Runner.</p>
