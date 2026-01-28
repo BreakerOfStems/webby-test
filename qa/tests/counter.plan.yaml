@@ -1,0 +1,59 @@
+name: Counter Component Test
+description: Verify counter component functionality including increment, decrement, and reset
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "{{BASE_URL}}/"
+
+  - action: wait
+    selector: "[data-testid='counter']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "counter-initial-state"
+
+  - action: assert
+    selector: "[data-testid='counter-value']"
+    contains: "0"
+
+  - action: click
+    selector: "[data-testid='counter-increment']"
+
+  - action: assert
+    selector: "[data-testid='counter-value']"
+    contains: "1"
+
+  - action: click
+    selector: "[data-testid='counter-increment']"
+
+  - action: assert
+    selector: "[data-testid='counter-value']"
+    contains: "2"
+
+  - action: screenshot
+    name: "counter-after-increment"
+
+  - action: click
+    selector: "[data-testid='counter-decrement']"
+
+  - action: assert
+    selector: "[data-testid='counter-value']"
+    contains: "1"
+
+  - action: screenshot
+    name: "counter-after-decrement"
+
+  - action: click
+    selector: "[data-testid='counter-reset']"
+
+  - action: assert
+    selector: "[data-testid='counter-value']"
+    contains: "0"
+
+  - action: screenshot
+    name: "counter-after-reset"

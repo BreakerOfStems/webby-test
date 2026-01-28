@@ -1,3 +1,5 @@
+import Counter from "./Counter";
+
 function App() {
   return (
     <div className="app">
@@ -7,6 +9,7 @@ function App() {
       </header>
       <main>
         <p>Welcome! This app will be expanded with new features.</p>
+        <Counter />
       </main>
     </div>
   );
