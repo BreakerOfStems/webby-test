@@ -1,0 +1,22 @@
+name: Smoke Test
+description: Basic health check to verify the app loads
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "{{BASE_URL}}/"
+
+  - action: wait
+    selector: "h1"
+    timeout: 10000
+
+  - action: screenshot
+    name: "homepage-loaded"
+
+  - action: assert
+    selector: "h1"
+    contains: "Webby Test"
