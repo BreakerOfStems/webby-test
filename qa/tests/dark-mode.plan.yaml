@@ -1,0 +1,66 @@
+name: Dark Mode Toggle Test
+description: Verify dark mode toggle functionality and theme persistence
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='theme-toggle']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "initial-light-mode"
+
+  - action: assert
+    selector: "[data-testid='theme-toggle']"
+    contains: "Dark"
+
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "dark-mode-enabled"
+
+  - action: assert
+    selector: "[data-testid='theme-toggle']"
+    contains: "Light"
+
+  - action: assert
+    selector: "h1"
+    contains: "Webby Test"
+
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='theme-toggle']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "dark-mode-persisted-after-refresh"
+
+  - action: assert
+    selector: "[data-testid='theme-toggle']"
+    contains: "Light"
+
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "light-mode-restored"
+
+  - action: assert
+    selector: "[data-testid='theme-toggle']"
+    contains: "Dark"

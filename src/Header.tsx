@@ -1,4 +1,8 @@
+import { useTheme } from "./ThemeContext";
+
 function Header() {
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <nav className="nav-header" data-testid="nav-header">
       <a href="/" className="nav-logo" data-testid="nav-logo">
@@ -21,6 +25,14 @@ function Header() {
           </a>
         </li>
       </ul>
+      <button
+        className="theme-toggle"
+        data-testid="theme-toggle"
+        onClick={toggleTheme}
+        aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+      >
+        {theme === "light" ? "Dark" : "Light"}
+      </button>
     </nav>
   );
 }
