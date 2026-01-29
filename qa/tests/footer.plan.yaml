@@ -78,17 +78,6 @@ steps:
   - action: wait
     timeout: 500
 
-  # Close the theme toggle toast
-  - action: wait
-    selector: "[data-testid='toast-info']"
-    timeout: 5000
-
-  - action: click
-    selector: "[data-testid='toast-close-btn']"
-
-  - action: wait
-    timeout: 300
-
   - action: screenshot
     name: "footer-dark-mode"
 
