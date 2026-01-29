@@ -5,7 +5,7 @@ function ToastItem({ toast }: { toast: ToastType }) {
 
   return (
     <div
-      className={`toast toast-${toast.type}`}
+      className={`toast toast-${toast.type}${toast.exiting ? " toast-exiting" : ""}`}
       data-testid="toast"
       data-toast-type={toast.type}
     >

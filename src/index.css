@@ -421,3 +421,18 @@ main p {
     transform: translateX(0);
   }
 }
+
+@keyframes toast-fade-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.toast-exiting {
+  animation: toast-fade-out 0.3s ease-in forwards;
+}
