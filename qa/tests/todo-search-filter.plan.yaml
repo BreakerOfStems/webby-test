@@ -1,0 +1,232 @@
+name: Todo Search and Filter Test
+description: Verify todo list search and filter functionality including search input, filter buttons, text highlighting, and persistence
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "search-filter-initial-state"
+
+  # Verify search and filter elements are present
+  - action: assert
+    selector: "[data-testid='todo-search-container']"
+
+  - action: assert
+    selector: "[data-testid='todo-search-input']"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-container']"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-all']"
+    contains: "All"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-active']"
+    contains: "Active"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-completed']"
+    contains: "Completed"
+
+  # Create test todos for search and filter testing
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Buy groceries"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    selector: "[data-testid='todo-item']"
+    timeout: 5000
+
+  # Wait for toast to auto-dismiss to avoid interference
+  - action: wait
+    timeout: 3500
+
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Walk the dog"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 3500
+
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Buy new shoes"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "search-filter-todos-created"
+
+  # Verify filter counts show correct numbers
+  - action: assert
+    selector: "[data-testid='todo-filter-all']"
+    contains: "All (3)"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-active']"
+    contains: "Active (3)"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-completed']"
+    contains: "Completed (0)"
+
+  # Test search functionality - search for "Buy"
+  - action: fill
+    selector: "[data-testid='todo-search-input']"
+    value: "Buy"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "search-filter-search-results"
+
+  # Verify search clear button appears
+  - action: assert
+    selector: "[data-testid='todo-search-clear']"
+
+  # Verify search results show only matching items
+  - action: assert
+    selector: "[data-testid='todo-filter-all']"
+    contains: "All (2)"
+
+  # Verify text highlighting
+  - action: assert
+    selector: "[data-testid='todo-highlight']"
+
+  # Test search clear button
+  - action: click
+    selector: "[data-testid='todo-search-clear']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "search-filter-search-cleared"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-all']"
+    contains: "All (3)"
+
+  # Mark first todo as completed for filter testing
+  - action: click
+    selector: "[data-testid='todo-checkbox']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "search-filter-one-completed"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-active']"
+    contains: "Active (2)"
+
+  - action: assert
+    selector: "[data-testid='todo-filter-completed']"
+    contains: "Completed (1)"
+
+  # Test Active filter
+  - action: click
+    selector: "[data-testid='todo-filter-active']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "search-filter-active-filter"
+
+  # Test Completed filter
+  - action: click
+    selector: "[data-testid='todo-filter-completed']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "search-filter-completed-filter"
+
+  # Verify only completed items are shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Buy groceries"
+
+  # Test All filter returns to all items
+  - action: click
+    selector: "[data-testid='todo-filter-all']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "search-filter-all-filter"
+
+  # Test no results message - search for non-existent item
+  - action: fill
+    selector: "[data-testid='todo-search-input']"
+    value: "xyz123nonexistent"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "search-filter-no-results"
+
+  - action: assert
+    selector: "[data-testid='todo-no-results']"
+    contains: "No matching todos found"
+
+  # Clear search
+  - action: click
+    selector: "[data-testid='todo-search-clear']"
+
+  - action: wait
+    timeout: 300
+
+  # Test filter persistence - set to Completed filter
+  - action: click
+    selector: "[data-testid='todo-filter-completed']"
+
+  - action: wait
+    timeout: 300
+
+  # Refresh page to test persistence
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "search-filter-persistence-after-refresh"
+
+  # Verify filter is still set to Completed
+  - action: assert
+    selector: "[data-testid='todo-filter-completed'].active"
+
+  # Verify only completed items are shown after refresh
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Buy groceries"
