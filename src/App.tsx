@@ -1,3 +1,4 @@
+import ContactForm from "./ContactForm";
 import Counter from "./Counter";
 import Header from "./Header";
 import TodoList from "./TodoList";
@@ -14,6 +15,7 @@ function App() {
         <p>Welcome! This app will be expanded with new features.</p>
         <Counter />
         <TodoList />
+        <ContactForm />
       </main>
     </div>
   );

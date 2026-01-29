@@ -1,0 +1,164 @@
+name: Contact Form Test
+description: Verify contact form functionality including validation, error messages, and successful submission
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='contact-form']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "contact-form-initial-state"
+
+  # Verify form elements are present
+  - action: assert
+    selector: "[data-testid='contact-name-input']"
+
+  - action: assert
+    selector: "[data-testid='contact-email-input']"
+
+  - action: assert
+    selector: "[data-testid='contact-message-input']"
+
+  - action: assert
+    selector: "[data-testid='contact-submit-btn']"
+
+  # Verify submit button is disabled initially
+  - action: assert
+    selector: "[data-testid='contact-submit-btn'][disabled]"
+
+  - action: screenshot
+    name: "contact-form-submit-disabled"
+
+  # Test name validation - enter short name and blur
+  - action: fill
+    selector: "[data-testid='contact-name-input']"
+    value: "A"
+
+  - action: click
+    selector: "[data-testid='contact-email-input']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "contact-form-name-error"
+
+  - action: assert
+    selector: "[data-testid='contact-name-error']"
+    contains: "Name must be at least 2 characters"
+
+  # Fix name field
+  - action: fill
+    selector: "[data-testid='contact-name-input']"
+    value: "John Doe"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "contact-form-name-valid"
+
+  # Test email validation - enter invalid email and blur
+  - action: fill
+    selector: "[data-testid='contact-email-input']"
+    value: "invalid-email"
+
+  - action: click
+    selector: "[data-testid='contact-message-input']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "contact-form-email-error"
+
+  - action: assert
+    selector: "[data-testid='contact-email-error']"
+    contains: "Please enter a valid email address"
+
+  # Fix email field
+  - action: fill
+    selector: "[data-testid='contact-email-input']"
+    value: "john@example.com"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "contact-form-email-valid"
+
+  # Test message validation - enter short message and blur
+  - action: fill
+    selector: "[data-testid='contact-message-input']"
+    value: "Short"
+
+  - action: click
+    selector: "[data-testid='contact-name-input']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "contact-form-message-error"
+
+  - action: assert
+    selector: "[data-testid='contact-message-error']"
+    contains: "Message must be at least 10 characters"
+
+  # Fix message field with valid content
+  - action: fill
+    selector: "[data-testid='contact-message-input']"
+    value: "This is a valid message with enough characters."
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "contact-form-all-valid"
+
+  # Verify submit button is now enabled
+  - action: assert
+    selector: "[data-testid='contact-submit-btn']:not([disabled])"
+
+  # Submit the form
+  - action: click
+    selector: "[data-testid='contact-submit-btn']"
+
+  - action: wait
+    selector: "[data-testid='contact-success']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "contact-form-submission-success"
+
+  - action: assert
+    selector: "[data-testid='contact-success']"
+    contains: "Thank you for your message"
+
+  # Verify send another message button
+  - action: assert
+    selector: "[data-testid='contact-new-btn']"
+    contains: "Send Another Message"
+
+  # Click to send another message
+  - action: click
+    selector: "[data-testid='contact-new-btn']"
+
+  - action: wait
+    selector: "[data-testid='contact-name-input']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "contact-form-reset-for-new-message"
+
+  # Verify form is reset and empty
+  - action: assert
+    selector: "[data-testid='contact-submit-btn'][disabled]"
