@@ -1,0 +1,310 @@
+name: Todo Statistics Dashboard Test
+description: Verify todo statistics dashboard including collapsible panel, stats display, progress bar, and streak counter
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "todo-stats-initial-state"
+
+  # Verify stats component exists and is expanded by default
+  - action: assert
+    selector: "[data-testid='todo-stats']"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-toggle']"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-panel']"
+
+  # Verify stats display with zero todos
+  - action: assert
+    selector: "[data-testid='todo-stat-total']"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-total-value']"
+    contains: "0"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-completed']"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-completed-value']"
+    contains: "0"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-pending']"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-pending-value']"
+    contains: "0"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-streak']"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-streak-value']"
+
+  # Verify progress bar exists with 0%
+  - action: assert
+    selector: "[data-testid='todo-stats-progress']"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-percentage']"
+    contains: "0%"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-progress-bar']"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-progress-fill']"
+
+  - action: screenshot
+    name: "todo-stats-zero-todos"
+
+  # Test collapse/expand functionality
+  - action: click
+    selector: "[data-testid='todo-stats-toggle']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "todo-stats-collapsed"
+
+  # Expand again
+  - action: click
+    selector: "[data-testid='todo-stats-toggle']"
+
+  - action: wait
+    timeout: 300
+
+  - action: assert
+    selector: "[data-testid='todo-stats-panel']"
+
+  - action: screenshot
+    name: "todo-stats-expanded-again"
+
+  # Add first todo item
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "First test todo"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    selector: "[data-testid='todo-item']"
+    timeout: 5000
+
+  # Close toast to avoid interference
+  - action: wait
+    selector: "[data-testid='toast-close-btn']"
+    timeout: 3000
+
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "todo-stats-one-todo-added"
+
+  # Verify stats updated to show 1 total, 0 completed, 1 pending
+  - action: assert
+    selector: "[data-testid='todo-stat-total-value']"
+    contains: "1"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-completed-value']"
+    contains: "0"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-pending-value']"
+    contains: "1"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-percentage']"
+    contains: "0%"
+
+  # Add second todo item
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Second test todo"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 500
+
+  # Close toast
+  - action: wait
+    selector: "[data-testid='toast-close-btn']"
+    timeout: 3000
+
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "todo-stats-two-todos-added"
+
+  # Verify stats show 2 total, 0 completed, 2 pending
+  - action: assert
+    selector: "[data-testid='todo-stat-total-value']"
+    contains: "2"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-pending-value']"
+    contains: "2"
+
+  # Mark first todo as completed
+  - action: click
+    selector: "[data-testid='todo-checkbox']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "todo-stats-one-completed"
+
+  # Verify stats show 2 total, 1 completed, 1 pending, 50%
+  - action: assert
+    selector: "[data-testid='todo-stat-total-value']"
+    contains: "2"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-completed-value']"
+    contains: "1"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-pending-value']"
+    contains: "1"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-percentage']"
+    contains: "50%"
+
+  # Verify streak counter is updated (should be at least 1 after completing a todo)
+  - action: assert
+    selector: "[data-testid='todo-stat-streak-value']"
+
+  - action: screenshot
+    name: "todo-stats-with-streak"
+
+  # Add third todo and complete it to test 100%
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Third test todo"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 500
+
+  # Close toast
+  - action: wait
+    selector: "[data-testid='toast-close-btn']"
+    timeout: 3000
+
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
+  # Complete second todo (the first uncompleted one)
+  - action: click
+    selector: "[data-testid='todo-item']:not(.completed) [data-testid='todo-checkbox']"
+
+  - action: wait
+    timeout: 300
+
+  # Complete third todo
+  - action: click
+    selector: "[data-testid='todo-item']:not(.completed) [data-testid='todo-checkbox']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "todo-stats-all-completed"
+
+  # Verify 100% completion
+  - action: assert
+    selector: "[data-testid='todo-stats-percentage']"
+    contains: "100%"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-total-value']"
+    contains: "3"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-completed-value']"
+    contains: "3"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-pending-value']"
+    contains: "0"
+
+  # Test stats persistence - refresh the page
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-stats']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "todo-stats-persisted-after-refresh"
+
+  # Verify stats are still correct after refresh
+  - action: assert
+    selector: "[data-testid='todo-stat-total-value']"
+    contains: "3"
+
+  - action: assert
+    selector: "[data-testid='todo-stat-completed-value']"
+    contains: "3"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-percentage']"
+    contains: "100%"
+
+  # Test dark mode support
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "todo-stats-dark-mode"
+
+  # Verify stats component still visible in dark mode
+  - action: assert
+    selector: "[data-testid='todo-stats']"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-panel']"
+
+  - action: assert
+    selector: "[data-testid='todo-stats-progress-bar']"
+
+  - action: screenshot
+    name: "todo-stats-dark-mode-verified"
