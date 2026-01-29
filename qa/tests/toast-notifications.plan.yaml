@@ -32,8 +32,13 @@ steps:
   - action: screenshot
     name: "toast-success-on-todo-add"
 
+  # Wait for and verify success toast appears
+  - action: wait
+    selector: ".toast-success"
+    timeout: 5000
+
   - action: assert
-    selector: "[data-testid='toast-success']"
+    selector: ".toast-success"
 
   - action: assert
     selector: "[data-testid='toast-message']"
@@ -57,14 +62,14 @@ steps:
     selector: "[data-testid='theme-toggle']"
 
   - action: wait
-    selector: "[data-testid='toast-info']"
+    selector: ".toast-info"
     timeout: 5000
 
   - action: screenshot
     name: "toast-info-on-theme-toggle"
 
   - action: assert
-    selector: "[data-testid='toast-info']"
+    selector: ".toast-info"
 
   - action: assert
     selector: "[data-testid='toast-message']"
@@ -133,14 +138,14 @@ steps:
     selector: "[data-testid='contact-submit-btn']"
 
   - action: wait
-    selector: "[data-testid='toast-success']"
+    selector: ".toast-success"
     timeout: 5000
 
   - action: screenshot
     name: "toast-success-on-contact-form-submit"
 
   - action: assert
-    selector: "[data-testid='toast-success']"
+    selector: ".toast-success"
 
   - action: assert
     selector: "[data-testid='toast-message']"

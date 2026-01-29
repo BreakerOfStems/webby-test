@@ -35,8 +35,12 @@ steps:
     contains: "Light"
 
   # Verify info toast notification appears on theme toggle
+  - action: wait
+    selector: ".toast-info"
+    timeout: 5000
+
   - action: assert
-    selector: "[data-testid='toast-info']"
+    selector: ".toast-info"
 
   - action: assert
     selector: "[data-testid='toast-message']"
@@ -84,8 +88,12 @@ steps:
     contains: "Dark"
 
   # Verify info toast notification appears on theme toggle back to light
+  - action: wait
+    selector: ".toast-info"
+    timeout: 5000
+
   - action: assert
-    selector: "[data-testid='toast-info']"
+    selector: ".toast-info"
 
   - action: assert
     selector: "[data-testid='toast-message']"
