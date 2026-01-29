@@ -1,0 +1,103 @@
+name: Todo List Component Test
+description: Verify todo list functionality including add, complete, delete, and localStorage persistence
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "todo-list-initial-empty-state"
+
+  - action: assert
+    selector: "[data-testid='todo-input']"
+
+  - action: assert
+    selector: "[data-testid='todo-add-btn']"
+
+  # Add first todo item
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Buy groceries"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    selector: "[data-testid='todo-item']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "todo-first-item-added"
+
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Buy groceries"
+
+  # Add second todo item
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Walk the dog"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "todo-second-item-added"
+
+  # Mark first todo as completed
+  - action: click
+    selector: "[data-testid='todo-checkbox']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "todo-item-marked-completed"
+
+  # Verify persistence by refreshing the page
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "todo-items-persisted-after-refresh"
+
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Buy groceries"
+
+  # Delete a todo item
+  - action: click
+    selector: "[data-testid='todo-delete-btn']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "todo-item-deleted"
+
+  # Verify deletion persists
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "todo-deletion-persisted"
