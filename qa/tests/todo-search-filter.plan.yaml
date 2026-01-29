@@ -51,16 +51,9 @@ steps:
     selector: "[data-testid='todo-item']"
     timeout: 5000
 
-  # Close toast to avoid interference
+  # Wait for toast to auto-dismiss to avoid interference
   - action: wait
-    selector: "[data-testid='toast-success']"
-    timeout: 5000
-
-  - action: click
-    selector: "[data-testid='toast-close-btn']"
-
-  - action: wait
-    timeout: 300
+    timeout: 3500
 
   - action: fill
     selector: "[data-testid='todo-input']"
@@ -70,13 +63,7 @@ steps:
     selector: "[data-testid='todo-add-btn']"
 
   - action: wait
-    timeout: 500
-
-  - action: click
-    selector: "[data-testid='toast-close-btn']"
-
-  - action: wait
-    timeout: 300
+    timeout: 3500
 
   - action: fill
     selector: "[data-testid='todo-input']"
@@ -86,13 +73,7 @@ steps:
     selector: "[data-testid='todo-add-btn']"
 
   - action: wait
-    timeout: 500
-
-  - action: click
-    selector: "[data-testid='toast-close-btn']"
-
-  - action: wait
-    timeout: 300
+    timeout: 3500
 
   - action: screenshot
     name: "search-filter-todos-created"
