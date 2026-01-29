@@ -36,11 +36,11 @@ steps:
 
   # Verify info toast notification appears on theme toggle
   - action: wait
-    selector: ".toast-info"
+    selector: "[data-testid='toast-info']"
     timeout: 5000
 
   - action: assert
-    selector: ".toast-info"
+    selector: "[data-testid='toast-info']"
 
   - action: assert
     selector: "[data-testid='toast-message']"
@@ -89,11 +89,11 @@ steps:
 
   # Verify info toast notification appears on theme toggle back to light
   - action: wait
-    selector: ".toast-info"
+    selector: "[data-testid='toast-info']"
     timeout: 5000
 
   - action: assert
-    selector: ".toast-info"
+    selector: "[data-testid='toast-info']"
 
   - action: assert
     selector: "[data-testid='toast-message']"

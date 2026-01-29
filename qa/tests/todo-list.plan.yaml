@@ -44,11 +44,11 @@ steps:
 
   # Verify success toast notification appears
   - action: wait
-    selector: ".toast-success"
+    selector: "[data-testid='toast-success']"
     timeout: 5000
 
   - action: assert
-    selector: ".toast-success"
+    selector: "[data-testid='toast-success']"
 
   - action: assert
     selector: "[data-testid='toast-message']"
