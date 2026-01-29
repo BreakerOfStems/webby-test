@@ -1,5 +1,5 @@
 name: Dark Mode Toggle Test
-description: Verify dark mode toggle functionality and theme persistence
+description: Verify dark mode toggle functionality, theme persistence, and toast notifications
 
 setup:
   docker-compose: true
@@ -34,6 +34,24 @@ steps:
     selector: "[data-testid='theme-toggle']"
     contains: "Light"
 
+  # Verify info toast notification appears on theme toggle
+  - action: assert
+    selector: "[data-testid='toast-info']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Switched to dark mode"
+
+  - action: screenshot
+    name: "dark-mode-toast"
+
+  # Close the toast before continuing
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
   - action: assert
     selector: "h1"
     contains: "Webby Test"
@@ -64,3 +82,14 @@ steps:
   - action: assert
     selector: "[data-testid='theme-toggle']"
     contains: "Dark"
+
+  # Verify info toast notification appears on theme toggle back to light
+  - action: assert
+    selector: "[data-testid='toast-info']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Switched to light mode"
+
+  - action: screenshot
+    name: "light-mode-toast"

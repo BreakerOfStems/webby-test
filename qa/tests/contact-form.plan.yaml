@@ -1,5 +1,5 @@
 name: Contact Form Test
-description: Verify contact form functionality including validation, error messages, and successful submission
+description: Verify contact form functionality including validation, error messages, successful submission, and toast notifications
 
 setup:
   docker-compose: true
@@ -142,6 +142,24 @@ steps:
   - action: assert
     selector: "[data-testid='contact-success']"
     contains: "Thank you for your message"
+
+  # Verify success toast notification appears
+  - action: assert
+    selector: "[data-testid='toast-success']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Message sent successfully"
+
+  - action: screenshot
+    name: "contact-form-success-toast"
+
+  # Close the toast
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
 
   # Verify send another message button
   - action: assert
