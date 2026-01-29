@@ -1,5 +1,6 @@
 import Counter from "./Counter";
 import Header from "./Header";
+import TodoList from "./TodoList";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <main>
         <p>Welcome! This app will be expanded with new features.</p>
         <Counter />
+        <TodoList />
       </main>
     </div>
   );
