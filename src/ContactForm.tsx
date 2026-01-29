@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "./ToastContext";
 
 interface FormErrors {
   name?: string;
@@ -13,6 +14,7 @@ function ContactForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [submitted, setSubmitted] = useState(false);
+  const { addToast } = useToast();
 
   const validateName = (value: string): string | undefined => {
     if (value.length < 2) {
@@ -85,6 +87,7 @@ function ContactForm() {
       setMessage("");
       setTouched({});
       setErrors({});
+      addToast("Message sent successfully", "success");
     }
   };
 

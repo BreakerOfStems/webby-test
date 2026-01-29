@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useToast } from "./ToastContext";
 
 interface Todo {
   id: number;
@@ -14,6 +15,7 @@ function TodoList() {
     return saved ? JSON.parse(saved) : [];
   });
   const [inputValue, setInputValue] = useState("");
+  const { addToast } = useToast();
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
@@ -30,6 +32,7 @@ function TodoList() {
     };
     setTodos([...todos, newTodo]);
     setInputValue("");
+    addToast("Todo item added", "success");
   };
 
   const toggleTodo = (id: number) => {
