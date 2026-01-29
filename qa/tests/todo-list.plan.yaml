@@ -35,12 +35,28 @@ steps:
     selector: "[data-testid='todo-item']"
     timeout: 5000
 
+  # Verify toast notification appears
+  - action: wait
+    selector: "[data-testid='toast']"
+    timeout: 3000
+
+  - action: assert
+    selector: "[data-testid='toast'][data-toast-type='success']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Todo item added"
+
   - action: screenshot
-    name: "todo-first-item-added"
+    name: "todo-first-item-added-with-toast"
 
   - action: assert
     selector: "[data-testid='todo-text']"
     contains: "Buy groceries"
+
+  # Wait for toast to auto-dismiss before continuing
+  - action: wait
+    timeout: 3500
 
   # Add second todo item
   - action: fill

@@ -136,8 +136,20 @@ steps:
     selector: "[data-testid='contact-success']"
     timeout: 5000
 
+  # Verify toast notification appears on successful submission
+  - action: wait
+    selector: "[data-testid='toast']"
+    timeout: 3000
+
+  - action: assert
+    selector: "[data-testid='toast'][data-toast-type='success']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Message sent successfully"
+
   - action: screenshot
-    name: "contact-form-submission-success"
+    name: "contact-form-submission-success-with-toast"
 
   - action: assert
     selector: "[data-testid='contact-success']"

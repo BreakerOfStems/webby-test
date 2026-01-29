@@ -27,12 +27,28 @@ steps:
   - action: wait
     timeout: 500
 
+  # Verify toast notification appears on theme toggle
+  - action: wait
+    selector: "[data-testid='toast']"
+    timeout: 3000
+
+  - action: assert
+    selector: "[data-testid='toast'][data-toast-type='info']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Switched to dark mode"
+
   - action: screenshot
-    name: "dark-mode-enabled"
+    name: "dark-mode-enabled-with-toast"
 
   - action: assert
     selector: "[data-testid='theme-toggle']"
     contains: "Light"
+
+  # Wait for toast to auto-dismiss
+  - action: wait
+    timeout: 3500
 
   - action: assert
     selector: "h1"
@@ -58,8 +74,20 @@ steps:
   - action: wait
     timeout: 500
 
+  # Verify toast notification appears on theme toggle back to light
+  - action: wait
+    selector: "[data-testid='toast']"
+    timeout: 3000
+
+  - action: assert
+    selector: "[data-testid='toast'][data-toast-type='info']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Switched to light mode"
+
   - action: screenshot
-    name: "light-mode-restored"
+    name: "light-mode-restored-with-toast"
 
   - action: assert
     selector: "[data-testid='theme-toggle']"
