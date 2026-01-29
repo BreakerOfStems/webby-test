@@ -1,0 +1,152 @@
+name: Toast Notifications Test
+description: Verify toast notification system including display, auto-dismiss, manual close, and stacking
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "toast-initial-state-no-toasts"
+
+  # Test toast appears when adding a todo item
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Test todo for toast"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    selector: "[data-testid='toast-container']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "toast-success-on-todo-add"
+
+  # Wait for and verify success toast appears
+  - action: wait
+    selector: "[data-testid='toast-success']"
+    timeout: 5000
+
+  - action: assert
+    selector: "[data-testid='toast-success']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Todo item added successfully"
+
+  - action: assert
+    selector: "[data-testid='toast-close-btn']"
+
+  # Test manual close button
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "toast-manually-closed"
+
+  # Test info toast on theme toggle
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    selector: "[data-testid='toast-info']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "toast-info-on-theme-toggle"
+
+  - action: assert
+    selector: "[data-testid='toast-info']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Switched to"
+
+  # Close the theme toast
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 500
+
+  # Test toast stacking - add multiple todos quickly
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "First stacked todo"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 200
+
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Second stacked todo"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    selector: "[data-testid='toast-container']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "toast-stacking-multiple-toasts"
+
+  # Test auto-dismiss - wait for toasts to auto-dismiss (3 seconds + buffer)
+  - action: wait
+    timeout: 4000
+
+  - action: screenshot
+    name: "toast-auto-dismissed"
+
+  # Test success toast on contact form submission
+  - action: wait
+    selector: "[data-testid='contact-form']"
+    timeout: 5000
+
+  - action: fill
+    selector: "[data-testid='contact-name-input']"
+    value: "Toast Test User"
+
+  - action: fill
+    selector: "[data-testid='contact-email-input']"
+    value: "toast@example.com"
+
+  - action: fill
+    selector: "[data-testid='contact-message-input']"
+    value: "This is a test message for verifying toast notifications on form submission."
+
+  - action: wait
+    timeout: 500
+
+  - action: click
+    selector: "[data-testid='contact-submit-btn']"
+
+  - action: wait
+    selector: "[data-testid='toast-success']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "toast-success-on-contact-form-submit"
+
+  - action: assert
+    selector: "[data-testid='toast-success']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Message sent successfully"

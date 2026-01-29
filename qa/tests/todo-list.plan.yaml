@@ -1,5 +1,5 @@
 name: Todo List Component Test
-description: Verify todo list functionality including add, complete, delete, and localStorage persistence
+description: Verify todo list functionality including add, complete, delete, localStorage persistence, and toast notifications
 
 setup:
   docker-compose: true
@@ -41,6 +41,28 @@ steps:
   - action: assert
     selector: "[data-testid='todo-text']"
     contains: "Buy groceries"
+
+  # Verify success toast notification appears
+  - action: wait
+    selector: "[data-testid='toast-success']"
+    timeout: 5000
+
+  - action: assert
+    selector: "[data-testid='toast-success']"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Todo item added successfully"
+
+  - action: screenshot
+    name: "todo-success-toast"
+
+  # Close the toast before continuing
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
 
   # Add second todo item
   - action: fill
