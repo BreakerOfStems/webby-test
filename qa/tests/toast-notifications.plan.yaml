@@ -1,0 +1,122 @@
+name: Toast Notification System Test
+description: Verify toast notifications appear for various actions including todo add, contact form submit, and theme toggle
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "initial-state-no-toasts"
+
+  # Verify toast container exists
+  - action: assert
+    selector: "[data-testid='toast-container']"
+
+  # Test 1: Toast on adding a todo item
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Test todo for toast"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    selector: "[data-testid='toast']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "toast-after-todo-add"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Todo item added"
+
+  - action: assert
+    selector: "[data-testid='toast'][data-toast-type='success']"
+
+  # Wait for toast to auto-dismiss (3 seconds)
+  - action: wait
+    timeout: 4000
+
+  - action: screenshot
+    name: "toast-auto-dismissed"
+
+  # Test 2: Toast on theme toggle
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    selector: "[data-testid='toast']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "toast-after-theme-toggle"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Switched to"
+
+  - action: assert
+    selector: "[data-testid='toast'][data-toast-type='info']"
+
+  # Test 3: Manually close toast using close button
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "toast-manually-closed"
+
+  # Toggle theme back to light mode
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 4000
+
+  # Test 4: Toast on contact form submission
+  - action: fill
+    selector: "[data-testid='contact-name-input']"
+    value: "John Doe"
+
+  - action: fill
+    selector: "[data-testid='contact-email-input']"
+    value: "john@example.com"
+
+  - action: fill
+    selector: "[data-testid='contact-message-input']"
+    value: "This is a test message for toast notification."
+
+  - action: wait
+    timeout: 500
+
+  - action: click
+    selector: "[data-testid='contact-submit-btn']"
+
+  - action: wait
+    selector: "[data-testid='toast']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "toast-after-contact-form-submit"
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Message sent successfully"
+
+  - action: assert
+    selector: "[data-testid='toast'][data-toast-type='success']"
+
+  - action: screenshot
+    name: "toast-notification-test-complete"
