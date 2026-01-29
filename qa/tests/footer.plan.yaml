@@ -1,0 +1,109 @@
+name: Footer Component Test
+description: Verify footer component with social links, copyright, and site info
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='footer']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "footer-initial-state"
+
+  # Verify footer is visible
+  - action: assert
+    selector: "[data-testid='footer']"
+
+  # Verify social links container
+  - action: assert
+    selector: "[data-testid='footer-social']"
+
+  # Verify GitHub link
+  - action: assert
+    selector: "[data-testid='footer-link-github']"
+
+  - action: assert
+    selector: "[data-testid='footer-link-github'][href='https://github.com']"
+
+  - action: assert
+    selector: "[data-testid='footer-link-github'][target='_blank']"
+
+  # Verify Twitter link
+  - action: assert
+    selector: "[data-testid='footer-link-twitter']"
+
+  - action: assert
+    selector: "[data-testid='footer-link-twitter'][href='https://twitter.com']"
+
+  - action: assert
+    selector: "[data-testid='footer-link-twitter'][target='_blank']"
+
+  # Verify LinkedIn link
+  - action: assert
+    selector: "[data-testid='footer-link-linkedin']"
+
+  - action: assert
+    selector: "[data-testid='footer-link-linkedin'][href='https://linkedin.com']"
+
+  - action: assert
+    selector: "[data-testid='footer-link-linkedin'][target='_blank']"
+
+  - action: screenshot
+    name: "footer-social-links-verified"
+
+  # Verify copyright text with current year
+  - action: assert
+    selector: "[data-testid='footer-copyright']"
+    contains: "Webby Test. All rights reserved."
+
+  # Verify credit text
+  - action: assert
+    selector: "[data-testid='footer-credit']"
+    contains: "Built with React + Vite"
+
+  - action: screenshot
+    name: "footer-text-content-verified"
+
+  # Verify footer works in dark mode
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 500
+
+  # Close the theme toggle toast
+  - action: wait
+    selector: "[data-testid='toast-info']"
+    timeout: 5000
+
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "footer-dark-mode"
+
+  # Verify footer elements are still visible in dark mode
+  - action: assert
+    selector: "[data-testid='footer']"
+
+  - action: assert
+    selector: "[data-testid='footer-social']"
+
+  - action: assert
+    selector: "[data-testid='footer-copyright']"
+
+  - action: assert
+    selector: "[data-testid='footer-credit']"
+
+  - action: screenshot
+    name: "footer-dark-mode-verified"
