@@ -829,3 +829,123 @@ main p {
 [data-theme="dark"] .todo-due-date-input::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
+
+/* Keyboard Shortcuts Modal Styles */
+.keyboard-shortcuts-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: backdrop-fade-in 0.2s ease;
+}
+
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.keyboard-shortcuts-modal {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: auto;
+  animation: modal-slide-in 0.2s ease;
+}
+
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.keyboard-shortcuts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--shadow-color);
+}
+
+.keyboard-shortcuts-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.keyboard-shortcuts-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  border-radius: 4px;
+}
+
+.keyboard-shortcuts-close:hover {
+  opacity: 1;
+}
+
+.keyboard-shortcuts-close:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.keyboard-shortcuts-list {
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0;
+}
+
+.keyboard-shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  gap: 1rem;
+}
+
+.keyboard-shortcut-item:hover {
+  background: var(--counter-bg);
+}
+
+.keyboard-shortcut-description {
+  color: var(--text-color);
+  font-size: 0.875rem;
+}
+
+.keyboard-shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--counter-bg);
+  color: var(--text-color);
+  border: 1px solid var(--shadow-color);
+  border-radius: 4px;
+  white-space: nowrap;
+}
