@@ -120,9 +120,9 @@ steps:
     selector: "[data-testid='theme-toggle']"
     contains: "Light"
 
-  # Wait for toast to appear
+  # Wait for toast to appear and verify message
   - action: wait
-    selector: "[data-testid='toast-info']"
+    selector: "[data-testid='toast-container']"
     timeout: 5000
 
   - action: assert
@@ -152,7 +152,7 @@ steps:
 
   # Wait for toast and close it
   - action: wait
-    selector: "[data-testid='toast-info']"
+    selector: "[data-testid='toast-container']"
     timeout: 5000
 
   - action: click
@@ -215,7 +215,7 @@ steps:
 
   # Close toast
   - action: wait
-    selector: "[data-testid='toast-info']"
+    selector: "[data-testid='toast-container']"
     timeout: 3000
 
   - action: click
