@@ -1,0 +1,350 @@
+name: Todo Due Dates Test
+description: Verify todo due dates functionality including date picker, relative formatting, overdue highlighting, and due date filters
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "due-dates-initial-state"
+
+  # Verify due date filter container exists
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-container']"
+
+  # Verify due date filter buttons exist
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-all']"
+
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-today']"
+
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-overdue']"
+
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-upcoming']"
+
+  # Verify due date input wrapper exists
+  - action: assert
+    selector: "[data-testid='todo-due-date-input-wrapper']"
+
+  # Verify due date input exists
+  - action: assert
+    selector: "[data-testid='todo-due-date-input']"
+
+  - action: screenshot
+    name: "due-dates-ui-elements-verified"
+
+  # Add a todo without a due date first
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Todo without due date"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    selector: "[data-testid='todo-item']"
+    timeout: 5000
+
+  # Wait for toast to auto-dismiss
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "due-dates-todo-without-date"
+
+  # Verify the todo item does not have a due date element
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Todo without due date"
+
+  # Add a todo with a due date (using today's date for predictable test)
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Todo due today"
+
+  # Set due date to today using the date input
+  - action: fill
+    selector: "[data-testid='todo-due-date-input']"
+    value: "2026-01-30"
+
+  - action: screenshot
+    name: "due-dates-input-filled"
+
+  # Verify due date clear button appears when date is set
+  - action: assert
+    selector: "[data-testid='todo-due-date-clear']"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "due-dates-todo-with-date-added"
+
+  # Verify the todo shows the due date
+  - action: assert
+    selector: "[data-testid='todo-due-date']"
+
+  - action: assert
+    selector: "[data-testid='todo-due-date-text']"
+    contains: "Today"
+
+  # Wait for toast to auto-dismiss
+  - action: wait
+    timeout: 3500
+
+  # Add a todo with a future due date (tomorrow)
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Todo due tomorrow"
+
+  - action: fill
+    selector: "[data-testid='todo-due-date-input']"
+    value: "2026-01-31"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 500
+
+  # Wait for toast to auto-dismiss
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "due-dates-tomorrow-added"
+
+  # Add an overdue todo (past date)
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Overdue todo"
+
+  - action: fill
+    selector: "[data-testid='todo-due-date-input']"
+    value: "2026-01-28"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "due-dates-overdue-added"
+
+  # Verify overdue badge appears
+  - action: assert
+    selector: "[data-testid='todo-overdue-badge']"
+    contains: "Overdue"
+
+  # Close toast
+  - action: wait
+    selector: "[data-testid='toast-close-btn']"
+    timeout: 3000
+
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "due-dates-overdue-badge-visible"
+
+  # Test due date filter counts
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-today']"
+    contains: "Today (1)"
+
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-overdue']"
+    contains: "Overdue (1)"
+
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-upcoming']"
+    contains: "Upcoming (1)"
+
+  - action: screenshot
+    name: "due-dates-filter-counts"
+
+  # Test Today filter
+  - action: click
+    selector: "[data-testid='todo-due-date-filter-today']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "due-dates-filter-today"
+
+  # Verify only today's todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Todo due today"
+
+  # Test Overdue filter
+  - action: click
+    selector: "[data-testid='todo-due-date-filter-overdue']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "due-dates-filter-overdue"
+
+  # Verify only overdue todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Overdue todo"
+
+  # Verify overdue badge is visible
+  - action: assert
+    selector: "[data-testid='todo-overdue-badge']"
+
+  # Test Upcoming filter
+  - action: click
+    selector: "[data-testid='todo-due-date-filter-upcoming']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "due-dates-filter-upcoming"
+
+  # Verify only upcoming todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Todo due tomorrow"
+
+  # Return to All filter
+  - action: click
+    selector: "[data-testid='todo-due-date-filter-all']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "due-dates-filter-all"
+
+  # Test clearing due date before adding
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Test clear due date"
+
+  - action: fill
+    selector: "[data-testid='todo-due-date-input']"
+    value: "2026-02-15"
+
+  - action: assert
+    selector: "[data-testid='todo-due-date-clear']"
+
+  - action: click
+    selector: "[data-testid='todo-due-date-clear']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "due-dates-cleared-input"
+
+  # Clear the text input to avoid adding todo
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: ""
+
+  # Test completing an overdue todo removes overdue styling
+  - action: click
+    selector: "[data-testid='todo-due-date-filter-overdue']"
+
+  - action: wait
+    timeout: 300
+
+  # Complete the overdue todo
+  - action: click
+    selector: "[data-testid='todo-checkbox']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "due-dates-overdue-completed"
+
+  # Go back to all filter to see completed todo
+  - action: click
+    selector: "[data-testid='todo-due-date-filter-all']"
+
+  - action: wait
+    timeout: 300
+
+  # Test filter persistence - refresh the page
+  - action: click
+    selector: "[data-testid='todo-due-date-filter-upcoming']"
+
+  - action: wait
+    timeout: 300
+
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "due-dates-filter-persisted"
+
+  # Verify upcoming filter is still active after refresh
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-upcoming'].active"
+
+  # Test dark mode support
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "due-dates-dark-mode"
+
+  # Verify due date elements are visible in dark mode
+  - action: assert
+    selector: "[data-testid='todo-due-date-filter-container']"
+
+  - action: assert
+    selector: "[data-testid='todo-due-date-input']"
+
+  # Go back to all filter to see all todos in dark mode
+  - action: click
+    selector: "[data-testid='todo-due-date-filter-all']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "due-dates-dark-mode-all-todos"
+
+  # Switch back to light mode
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "due-dates-light-mode-restored"
