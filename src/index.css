@@ -706,3 +706,126 @@ main p {
   border-radius: 4px;
   transition: width 0.5s ease-out;
 }
+
+/* Due Date Filter Styles */
+.todo-due-date-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.todo-due-date-filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.todo-filter-btn-overdue:not(.active) {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.todo-filter-btn-overdue:not(.active):hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Due Date Input Styles */
+.todo-due-date-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.todo-due-date-input {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.todo-due-date-input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.todo-due-date-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--text-color);
+  opacity: 0.6;
+  padding: 0.25rem;
+  line-height: 1;
+  transition: opacity 0.2s;
+}
+
+.todo-due-date-clear:hover {
+  opacity: 1;
+}
+
+/* Todo Item Content Layout */
+.todo-item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Due Date Display Styles */
+.todo-due-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.todo-due-date-overdue {
+  color: #ef4444;
+  opacity: 1;
+  font-weight: 500;
+}
+
+/* Overdue Badge Styles */
+.todo-overdue-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background: #ef4444;
+  color: white;
+  border-radius: 3px;
+}
+
+/* Overdue Todo Item Styles */
+.todo-item-overdue {
+  border-left: 3px solid #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+[data-theme="dark"] .todo-item-overdue {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Dark mode date input styles */
+[data-theme="dark"] .todo-due-date-input {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] .todo-due-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
