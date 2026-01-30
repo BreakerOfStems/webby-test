@@ -19,10 +19,14 @@ steps:
 
   # Verify search and filter elements are present
   - action: assert
-    selector: "[data-testid='todo-search-container']"
+    selector: "[data-testid='todo-search-filter-row']"
 
   - action: assert
     selector: "[data-testid='todo-search-input']"
+
+  # Verify category filter dropdown exists
+  - action: assert
+    selector: "[data-testid='category-filter']"
 
   - action: assert
     selector: "[data-testid='todo-filter-container']"
