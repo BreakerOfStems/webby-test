@@ -21,6 +21,9 @@ steps:
     selector: "[data-testid='todo-input']"
 
   - action: assert
+    selector: "[data-testid='category-select']"
+
+  - action: assert
     selector: "[data-testid='todo-add-btn']"
 
   # Add first todo item

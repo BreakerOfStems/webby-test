@@ -1,0 +1,455 @@
+name: Todo Categories Test
+description: Verify todo categories functionality including category selector, colored tags, category filter dropdown, and persistence
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "categories-initial-state"
+
+  # Verify category filter dropdown exists
+  - action: assert
+    selector: "[data-testid='category-filter']"
+
+  # Verify category filter has "All Categories" as default
+  - action: assert
+    selector: "[data-testid='category-filter'] option[value='all']"
+
+  # Verify category selector in input area exists
+  - action: assert
+    selector: "[data-testid='category-select']"
+
+  # Verify category selector has "No Category" option
+  - action: assert
+    selector: "[data-testid='category-select'] option[value='']"
+
+  - action: screenshot
+    name: "categories-ui-elements-verified"
+
+  # Add a todo with Work category
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Complete project report"
+
+  - action: select
+    selector: "[data-testid='category-select']"
+    value: "work"
+
+  - action: screenshot
+    name: "categories-work-selected"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    selector: "[data-testid='todo-item']"
+    timeout: 5000
+
+  # Wait for toast to auto-dismiss
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "categories-work-todo-added"
+
+  # Verify Work category tag is displayed
+  - action: assert
+    selector: "[data-testid='category-tag-work']"
+    contains: "Work"
+
+  # Add a todo with Personal category
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Call mom"
+
+  - action: select
+    selector: "[data-testid='category-select']"
+    value: "personal"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "categories-personal-todo-added"
+
+  # Verify Personal category tag is displayed
+  - action: assert
+    selector: "[data-testid='category-tag-personal']"
+    contains: "Personal"
+
+  # Add a todo with Shopping category
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Buy groceries"
+
+  - action: select
+    selector: "[data-testid='category-select']"
+    value: "shopping"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "categories-shopping-todo-added"
+
+  # Verify Shopping category tag is displayed
+  - action: assert
+    selector: "[data-testid='category-tag-shopping']"
+    contains: "Shopping"
+
+  # Add a todo with Health category
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Go to gym"
+
+  - action: select
+    selector: "[data-testid='category-select']"
+    value: "health"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "categories-health-todo-added"
+
+  # Verify Health category tag is displayed
+  - action: assert
+    selector: "[data-testid='category-tag-health']"
+    contains: "Health"
+
+  # Add a todo with Other category
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "Miscellaneous task"
+
+  - action: select
+    selector: "[data-testid='category-select']"
+    value: "other"
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "categories-other-todo-added"
+
+  # Verify Other category tag is displayed
+  - action: assert
+    selector: "[data-testid='category-tag-other']"
+    contains: "Other"
+
+  # Add a todo without category
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "No category task"
+
+  - action: select
+    selector: "[data-testid='category-select']"
+    value: ""
+
+  - action: click
+    selector: "[data-testid='todo-add-btn']"
+
+  - action: wait
+    timeout: 3500
+
+  - action: screenshot
+    name: "categories-all-todos-created"
+
+  # Verify all 6 todos are visible
+  - action: assert
+    selector: "[data-testid='todo-filter-all']"
+    contains: "All (6)"
+
+  # Test category filter - filter by Work
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "work"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-filter-work"
+
+  # Verify only work todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Complete project report"
+
+  # Verify work tag is visible
+  - action: assert
+    selector: "[data-testid='category-tag-work']"
+
+  # Test category filter - filter by Personal
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "personal"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-filter-personal"
+
+  # Verify only personal todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Call mom"
+
+  # Test category filter - filter by Shopping
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "shopping"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-filter-shopping"
+
+  # Verify only shopping todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Buy groceries"
+
+  # Test category filter - filter by Health
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "health"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-filter-health"
+
+  # Verify only health todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Go to gym"
+
+  # Test category filter - filter by Other
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "other"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-filter-other"
+
+  # Verify only other todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Miscellaneous task"
+
+  # Return to All Categories
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "all"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-filter-all"
+
+  # Test category filter with search - search for "task" while filtering by Other
+  - action: fill
+    selector: "[data-testid='todo-search-input']"
+    value: "task"
+
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "other"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-filter-with-search"
+
+  # Clear search and return to all
+  - action: click
+    selector: "[data-testid='todo-search-clear']"
+
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "all"
+
+  - action: wait
+    timeout: 300
+
+  # Test category filter with status filter
+  # First mark the work todo as completed
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "work"
+
+  - action: wait
+    timeout: 300
+
+  - action: click
+    selector: "[data-testid='todo-checkbox']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-work-completed"
+
+  # Test combined filters - completed work items
+  - action: click
+    selector: "[data-testid='todo-filter-completed']"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-filter-work-completed"
+
+  # Verify the completed work todo is shown
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Complete project report"
+
+  # Return to all filters
+  - action: click
+    selector: "[data-testid='todo-filter-all']"
+
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "all"
+
+  - action: wait
+    timeout: 300
+
+  # Test no results message when filtering
+  - action: fill
+    selector: "[data-testid='todo-search-input']"
+    value: "xyz123nonexistent"
+
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "work"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "categories-no-results"
+
+  - action: assert
+    selector: "[data-testid='todo-no-results']"
+    contains: "No matching todos found"
+
+  # Clear search
+  - action: click
+    selector: "[data-testid='todo-search-clear']"
+
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "all"
+
+  - action: wait
+    timeout: 300
+
+  # Test category filter persistence - refresh the page
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "personal"
+
+  - action: wait
+    timeout: 300
+
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='todo-list']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "categories-filter-persisted"
+
+  # Verify personal filter is still active after refresh
+  - action: assert
+    selector: "[data-testid='category-filter']"
+
+  # Verify only personal todo is shown after refresh
+  - action: assert
+    selector: "[data-testid='todo-text']"
+    contains: "Call mom"
+
+  # Test dark mode support for category tags
+  - action: select
+    selector: "[data-testid='category-filter']"
+    value: "all"
+
+  - action: wait
+    timeout: 300
+
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "categories-dark-mode"
+
+  # Verify category tags are visible in dark mode
+  - action: assert
+    selector: "[data-testid='category-tag-work']"
+
+  - action: assert
+    selector: "[data-testid='category-tag-personal']"
+
+  - action: assert
+    selector: "[data-testid='category-tag-shopping']"
+
+  - action: assert
+    selector: "[data-testid='category-tag-health']"
+
+  - action: assert
+    selector: "[data-testid='category-tag-other']"
+
+  # Verify category filter dropdown is visible in dark mode
+  - action: assert
+    selector: "[data-testid='category-filter']"
+
+  - action: screenshot
+    name: "categories-dark-mode-verified"
+
+  # Switch back to light mode
+  - action: click
+    selector: "[data-testid='theme-toggle']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "categories-light-mode-restored"
