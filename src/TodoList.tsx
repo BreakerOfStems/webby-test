@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useToast } from "./ToastContext";
+import TodoStats from "./TodoStats";
 
 interface Todo {
   id: number;
@@ -105,6 +106,7 @@ function TodoList() {
   return (
     <div className="todo-list" data-testid="todo-list">
       <h3>Todo List</h3>
+      <TodoStats todos={todos} />
       <div className="todo-search-container" data-testid="todo-search-container">
         <div className="todo-search-input-wrapper">
           <span className="todo-search-icon">🔍</span>

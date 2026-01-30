@@ -584,3 +584,125 @@ main p {
 .app-content {
   flex: 1;
 }
+
+/* Todo Stats styles */
+.todo-stats {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.todo-stats-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--card-bg);
+  color: var(--text-color);
+  transition: background-color 0.2s;
+}
+
+.todo-stats-toggle:hover {
+  background: var(--counter-bg);
+}
+
+.todo-stats-toggle-icon {
+  font-size: 0.75rem;
+  transition: transform 0.2s;
+}
+
+.todo-stats-panel {
+  padding: 1rem;
+  background: var(--card-bg);
+  border-radius: 0 0 8px 8px;
+  margin-top: 2px;
+  animation: stats-panel-slide 0.2s ease;
+}
+
+@keyframes stats-panel-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.todo-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 480px) {
+  .todo-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.todo-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--counter-bg);
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.todo-stat-icon {
+  font-size: 1.25rem;
+}
+
+.todo-stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.todo-stat-value {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #2563eb;
+  line-height: 1.2;
+}
+
+.todo-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.todo-stats-progress {
+  padding-top: 0.5rem;
+}
+
+.todo-stats-progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
+.todo-stats-progress-bar {
+  height: 8px;
+  background: var(--counter-bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.todo-stats-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
+}
