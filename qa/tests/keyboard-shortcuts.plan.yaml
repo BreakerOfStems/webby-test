@@ -1,0 +1,279 @@
+name: Keyboard Shortcuts Test
+description: Verify keyboard shortcuts functionality including help modal, focus input, toggle dark mode, and escape key behavior
+
+setup:
+  docker-compose: true
+  env:
+    BASE_URL: http://localhost:3000
+
+steps:
+  - action: navigate
+    url: "/"
+
+  - action: wait
+    selector: "[data-testid='app-container']"
+    timeout: 10000
+
+  - action: screenshot
+    name: "keyboard-shortcuts-initial-state"
+
+  # Test ? key opens help modal
+  - action: press
+    key: "?"
+
+  - action: wait
+    selector: "[data-testid='keyboard-shortcuts-modal']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "keyboard-shortcuts-help-modal-opened"
+
+  # Verify modal elements
+  - action: assert
+    selector: "[data-testid='keyboard-shortcuts-backdrop']"
+
+  - action: assert
+    selector: "[data-testid='keyboard-shortcuts-modal']"
+
+  - action: assert
+    selector: "[data-testid='keyboard-shortcuts-title']"
+    contains: "Keyboard Shortcuts"
+
+  - action: assert
+    selector: "[data-testid='keyboard-shortcuts-close']"
+
+  - action: assert
+    selector: "[data-testid='keyboard-shortcuts-list']"
+
+  # Verify shortcut items are displayed
+  - action: assert
+    selector: "[data-testid='keyboard-shortcut-item']"
+
+  - action: assert
+    selector: "[data-testid='keyboard-shortcut-description']"
+
+  - action: assert
+    selector: "[data-testid='keyboard-shortcut-key']"
+
+  - action: screenshot
+    name: "keyboard-shortcuts-modal-elements-verified"
+
+  # Test Escape key closes the modal
+  - action: press
+    key: "Escape"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "keyboard-shortcuts-modal-closed-by-escape"
+
+  # Verify modal is closed (backdrop should not exist)
+  # Re-open modal to test close button
+  - action: press
+    key: "?"
+
+  - action: wait
+    selector: "[data-testid='keyboard-shortcuts-modal']"
+    timeout: 5000
+
+  # Test close button
+  - action: click
+    selector: "[data-testid='keyboard-shortcuts-close']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "keyboard-shortcuts-modal-closed-by-button"
+
+  # Re-open modal to test backdrop click
+  - action: press
+    key: "?"
+
+  - action: wait
+    selector: "[data-testid='keyboard-shortcuts-modal']"
+    timeout: 5000
+
+  # Test clicking backdrop closes modal
+  - action: click
+    selector: "[data-testid='keyboard-shortcuts-backdrop']"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "keyboard-shortcuts-modal-closed-by-backdrop"
+
+  # Test Ctrl+D toggles dark mode
+  - action: press
+    key: "Control+d"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "keyboard-shortcuts-dark-mode-toggled"
+
+  # Verify dark mode is enabled
+  - action: assert
+    selector: "[data-testid='theme-toggle']"
+    contains: "Light"
+
+  # Wait for toast to appear and verify message
+  - action: wait
+    selector: "[data-testid='toast-container']"
+    timeout: 5000
+
+  - action: assert
+    selector: "[data-testid='toast-message']"
+    contains: "Switched to dark mode"
+
+  # Close toast
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
+  # Toggle back to light mode
+  - action: press
+    key: "Control+d"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "keyboard-shortcuts-light-mode-restored"
+
+  - action: assert
+    selector: "[data-testid='theme-toggle']"
+    contains: "Dark"
+
+  # Wait for toast and close it
+  - action: wait
+    selector: "[data-testid='toast-container']"
+    timeout: 5000
+
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
+  # Test Ctrl+N focuses todo input
+  - action: press
+    key: "Control+n"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "keyboard-shortcuts-todo-input-focused"
+
+  # Verify todo input exists and is focusable
+  - action: assert
+    selector: "[data-testid='todo-input']"
+
+  # Test Escape clears search - first add content to search
+  - action: fill
+    selector: "[data-testid='todo-search-input']"
+    value: "test search"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "keyboard-shortcuts-search-filled"
+
+  # Verify search clear button appears
+  - action: assert
+    selector: "[data-testid='todo-search-clear']"
+
+  # Click outside search to blur, then press Escape
+  - action: click
+    selector: "h1"
+
+  - action: wait
+    timeout: 200
+
+  - action: press
+    key: "Escape"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "keyboard-shortcuts-search-cleared-by-escape"
+
+  # Test help modal in dark mode
+  - action: press
+    key: "Control+d"
+
+  - action: wait
+    timeout: 500
+
+  # Close toast
+  - action: wait
+    selector: "[data-testid='toast-container']"
+    timeout: 3000
+
+  - action: click
+    selector: "[data-testid='toast-close-btn']"
+
+  - action: wait
+    timeout: 300
+
+  - action: press
+    key: "?"
+
+  - action: wait
+    selector: "[data-testid='keyboard-shortcuts-modal']"
+    timeout: 5000
+
+  - action: screenshot
+    name: "keyboard-shortcuts-modal-dark-mode"
+
+  # Verify modal elements in dark mode
+  - action: assert
+    selector: "[data-testid='keyboard-shortcuts-modal']"
+
+  - action: assert
+    selector: "[data-testid='keyboard-shortcuts-title']"
+
+  - action: assert
+    selector: "[data-testid='keyboard-shortcut-item']"
+
+  # Close modal
+  - action: click
+    selector: "[data-testid='keyboard-shortcuts-close']"
+
+  - action: wait
+    timeout: 300
+
+  # Switch back to light mode
+  - action: press
+    key: "Control+d"
+
+  - action: wait
+    timeout: 500
+
+  - action: screenshot
+    name: "keyboard-shortcuts-test-complete"
+
+  # Test that shortcuts don't trigger when typing in input
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: "?"
+
+  - action: wait
+    timeout: 300
+
+  - action: screenshot
+    name: "keyboard-shortcuts-ignored-in-input"
+
+  # Modal should NOT have opened
+  # Clear the input
+  - action: fill
+    selector: "[data-testid='todo-input']"
+    value: ""
