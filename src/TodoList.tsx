@@ -2,12 +2,23 @@ import { useState, useEffect, useMemo } from "react";
 import { useToast } from "./ToastContext";
 import TodoStats from "./TodoStats";
 
+type CategoryType = "work" | "personal" | "shopping" | "health" | "other";
+
 interface Todo {
   id: number;
   text: string;
   completed: boolean;
   dueDate?: string; // ISO date string
+  category?: CategoryType;
 }
+
+const CATEGORIES: { value: CategoryType; label: string }[] = [
+  { value: "work", label: "Work" },
+  { value: "personal", label: "Personal" },
+  { value: "shopping", label: "Shopping" },
+  { value: "health", label: "Health" },
+  { value: "other", label: "Other" },
+];
 
 type FilterType = "all" | "active" | "completed";
 type DueDateFilterType = "all" | "today" | "overdue" | "upcoming";
@@ -80,6 +91,7 @@ function formatRelativeDate(dateString: string): string {
 const STORAGE_KEY = "todos";
 const FILTER_STORAGE_KEY = "todo-filter";
 const DUE_DATE_FILTER_STORAGE_KEY = "todo-due-date-filter";
+const CATEGORY_FILTER_STORAGE_KEY = "todo-category-filter";
 
 function TodoList() {
   const [todos, setTodos] = useState<Todo[]>(() => {
@@ -97,6 +109,11 @@ function TodoList() {
     const saved = localStorage.getItem(DUE_DATE_FILTER_STORAGE_KEY);
     return (saved as DueDateFilterType) || "all";
   });
+  const [categoryValue, setCategoryValue] = useState<CategoryType | "">("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryType | "all">(() => {
+    const saved = localStorage.getItem(CATEGORY_FILTER_STORAGE_KEY);
+    return (saved as CategoryType | "all") || "all";
+  });
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -110,6 +127,10 @@ function TodoList() {
   useEffect(() => {
     localStorage.setItem(DUE_DATE_FILTER_STORAGE_KEY, dueDateFilter);
   }, [dueDateFilter]);
+
+  useEffect(() => {
+    localStorage.setItem(CATEGORY_FILTER_STORAGE_KEY, categoryFilter);
+  }, [categoryFilter]);
 
   const filteredTodos = useMemo(() => {
     return todos.filter((todo) => {
@@ -139,9 +160,13 @@ function TodoList() {
         }
       }
 
-      return matchesSearch && matchesFilter && matchesDueDateFilter;
+      // Category filter logic
+      const matchesCategoryFilter =
+        categoryFilter === "all" || todo.category === categoryFilter;
+
+      return matchesSearch && matchesFilter && matchesDueDateFilter && matchesCategoryFilter;
     });
-  }, [todos, searchQuery, filter, dueDateFilter]);
+  }, [todos, searchQuery, filter, dueDateFilter, categoryFilter]);
 
   const counts = useMemo(() => {
     const searchFiltered = todos.filter((todo) =>
@@ -196,10 +221,12 @@ function TodoList() {
       text: trimmed,
       completed: false,
       dueDate: dueDateValue || undefined,
+      category: categoryValue || undefined,
     };
     setTodos([...todos, newTodo]);
     setInputValue("");
     setDueDateValue("");
+    setCategoryValue("");
     addToast("Todo item added successfully!", "success");
   };
 
@@ -225,7 +252,7 @@ function TodoList() {
     <div className="todo-list" data-testid="todo-list">
       <h3>Todo List</h3>
       <TodoStats todos={todos} />
-      <div className="todo-search-container" data-testid="todo-search-container">
+      <div className="todo-search-filter-row" data-testid="todo-search-filter-row">
         <div className="todo-search-input-wrapper">
           <span className="todo-search-icon">🔍</span>
           <input
@@ -247,6 +274,19 @@ function TodoList() {
             </button>
           )}
         </div>
+        <select
+          data-testid="category-filter"
+          className="todo-category-filter"
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value as CategoryType | "all")}
+        >
+          <option value="all">All Categories</option>
+          {CATEGORIES.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="todo-filter-container" data-testid="todo-filter-container">
         <button
@@ -311,6 +351,19 @@ function TodoList() {
           onKeyDown={handleKeyDown}
           placeholder="Add a new todo..."
         />
+        <select
+          data-testid="category-select"
+          className="todo-category-select"
+          value={categoryValue}
+          onChange={(e) => setCategoryValue(e.target.value as CategoryType | "")}
+        >
+          <option value="">No Category</option>
+          {CATEGORIES.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
+          ))}
+        </select>
         <div className="todo-due-date-input-wrapper" data-testid="todo-due-date-input-wrapper">
           <input
             type="date"
@@ -334,7 +387,7 @@ function TodoList() {
           Add
         </button>
       </div>
-      {filteredTodos.length === 0 && (searchQuery || filter !== "all" || dueDateFilter !== "all") ? (
+      {filteredTodos.length === 0 && (searchQuery || filter !== "all" || dueDateFilter !== "all" || categoryFilter !== "all") ? (
         <p className="todo-no-results" data-testid="todo-no-results">
           No matching todos found
         </p>
@@ -355,12 +408,22 @@ function TodoList() {
                   onChange={() => toggleTodo(todo.id)}
                 />
                 <div className="todo-item-content">
-                  <span
-                    data-testid="todo-text"
-                    className={todo.completed ? "todo-completed" : ""}
-                  >
-                    {highlightMatch(todo.text)}
-                  </span>
+                  <div className="todo-text-container">
+                    {todo.category && (
+                      <span
+                        data-testid={`category-tag-${todo.category}`}
+                        className={`category-tag category-tag-${todo.category}`}
+                      >
+                        {CATEGORIES.find((c) => c.value === todo.category)?.label}
+                      </span>
+                    )}
+                    <span
+                      data-testid="todo-text"
+                      className={todo.completed ? "todo-completed" : ""}
+                    >
+                      {highlightMatch(todo.text)}
+                    </span>
+                  </div>
                   {todo.dueDate && (
                     <span
                       className={`todo-due-date ${todoIsOverdue ? "todo-due-date-overdue" : ""}`}
