@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useToast } from "./ToastContext";
 import TodoStats from "./TodoStats";
 
@@ -89,6 +89,7 @@ function formatRelativeDate(dateString: string): string {
 }
 
 const STORAGE_KEY = "todos";
+const ORDER_STORAGE_KEY = "todo-order";
 const FILTER_STORAGE_KEY = "todo-filter";
 const DUE_DATE_FILTER_STORAGE_KEY = "todo-due-date-filter";
 const CATEGORY_FILTER_STORAGE_KEY = "todo-category-filter";
@@ -114,6 +115,14 @@ function TodoList() {
     const saved = localStorage.getItem(CATEGORY_FILTER_STORAGE_KEY);
     return (saved as CategoryType | "all") || "all";
   });
+  const [todoOrder, setTodoOrder] = useState<number[]>(() => {
+    const saved = localStorage.getItem(ORDER_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<number | null>(null);
+  const [dropPosition, setDropPosition] = useState<"before" | "after" | null>(null);
+  const draggedRef = useRef<number | null>(null);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -132,8 +141,35 @@ function TodoList() {
     localStorage.setItem(CATEGORY_FILTER_STORAGE_KEY, categoryFilter);
   }, [categoryFilter]);
 
+  useEffect(() => {
+    localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(todoOrder));
+  }, [todoOrder]);
+
+  // Sort todos by the stored order
+  const orderedTodos = useMemo(() => {
+    // Create a map of id -> order index
+    const orderMap = new Map<number, number>();
+    todoOrder.forEach((id, index) => orderMap.set(id, index));
+
+    // Sort todos: items in order first (by their position), then items not in order (newest first, at top)
+    return [...todos].sort((a, b) => {
+      const aInOrder = orderMap.has(a.id);
+      const bInOrder = orderMap.has(b.id);
+
+      if (!aInOrder && !bInOrder) {
+        // Both are new - newer items (higher id) come first (at top)
+        return b.id - a.id;
+      }
+      if (!aInOrder) return -1; // a is new, goes to top
+      if (!bInOrder) return 1;  // b is new, goes to top
+
+      // Both have order - sort by order
+      return orderMap.get(a.id)! - orderMap.get(b.id)!;
+    });
+  }, [todos, todoOrder]);
+
   const filteredTodos = useMemo(() => {
-    return todos.filter((todo) => {
+    return orderedTodos.filter((todo) => {
       const matchesSearch = todo.text.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFilter =
         filter === "all" ||
@@ -166,7 +202,7 @@ function TodoList() {
 
       return matchesSearch && matchesFilter && matchesDueDateFilter && matchesCategoryFilter;
     });
-  }, [todos, searchQuery, filter, dueDateFilter, categoryFilter]);
+  }, [orderedTodos, searchQuery, filter, dueDateFilter, categoryFilter]);
 
   const counts = useMemo(() => {
     const searchFiltered = todos.filter((todo) =>
@@ -246,6 +282,137 @@ function TodoList() {
     if (e.key === "Enter") {
       addTodo();
     }
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, id: number) => {
+    setDraggedId(id);
+    draggedRef.current = id;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id.toString());
+    // Add slight delay for visual feedback to work properly
+    requestAnimationFrame(() => {
+      const el = e.target as HTMLElement;
+      el.classList.add("dragging");
+    });
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDropTargetId(null);
+    setDropPosition(null);
+    draggedRef.current = null;
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
+    if (draggedRef.current === null || draggedRef.current === id) return;
+
+    // Determine drop position based on mouse position
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    const position = e.clientY < midY ? "before" : "after";
+
+    setDropTargetId(id);
+    setDropPosition(position);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if leaving the actual target, not children
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDropTargetId(null);
+      setDropPosition(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: number) => {
+    e.preventDefault();
+
+    const draggedIdFromData = parseInt(e.dataTransfer.getData("text/plain"), 10);
+    if (isNaN(draggedIdFromData) || draggedIdFromData === targetId) {
+      handleDragEnd();
+      return;
+    }
+
+    // Get current order or initialize with current todo ids
+    const currentOrder = todoOrder.length > 0
+      ? [...todoOrder]
+      : orderedTodos.map(t => t.id);
+
+    // Ensure dragged item is in the order
+    if (!currentOrder.includes(draggedIdFromData)) {
+      currentOrder.unshift(draggedIdFromData);
+    }
+    // Ensure target item is in the order
+    if (!currentOrder.includes(targetId)) {
+      currentOrder.push(targetId);
+    }
+
+    // Remove dragged item from its current position
+    const filteredOrder = currentOrder.filter(id => id !== draggedIdFromData);
+
+    // Find target position
+    const targetIndex = filteredOrder.indexOf(targetId);
+
+    // Insert at the correct position
+    const insertIndex = dropPosition === "before" ? targetIndex : targetIndex + 1;
+    filteredOrder.splice(insertIndex, 0, draggedIdFromData);
+
+    setTodoOrder(filteredOrder);
+    handleDragEnd();
+    addToast("Todo reordered", "info");
+  };
+
+  // Keyboard reordering with Alt+Arrow keys
+  const handleTodoKeyDown = (e: React.KeyboardEvent, todoId: number, index: number) => {
+    if (!e.altKey) return;
+
+    if (e.key === "ArrowUp" && index > 0) {
+      e.preventDefault();
+      moveTodo(todoId, index, index - 1);
+    } else if (e.key === "ArrowDown" && index < filteredTodos.length - 1) {
+      e.preventDefault();
+      moveTodo(todoId, index, index + 1);
+    }
+  };
+
+  const moveTodo = (todoId: number, fromIndex: number, toIndex: number) => {
+    // Get current filtered order
+    const currentFilteredIds = filteredTodos.map(t => t.id);
+
+    // Get the full order (or initialize if empty)
+    const currentOrder = todoOrder.length > 0
+      ? [...todoOrder]
+      : orderedTodos.map(t => t.id);
+
+    // Ensure all filtered items are in the order
+    currentFilteredIds.forEach(id => {
+      if (!currentOrder.includes(id)) {
+        currentOrder.push(id);
+      }
+    });
+
+    // Get the IDs of the items being swapped in the filtered view
+    const movedId = currentFilteredIds[fromIndex];
+    const targetId = currentFilteredIds[toIndex];
+
+    // Find position in the full order and remove
+    const movedFullIndex = currentOrder.indexOf(movedId);
+    currentOrder.splice(movedFullIndex, 1);
+    const newTargetIndex = currentOrder.indexOf(targetId);
+    const insertAt = fromIndex < toIndex ? newTargetIndex + 1 : newTargetIndex;
+    currentOrder.splice(insertAt, 0, movedId);
+
+    setTodoOrder(currentOrder);
+    addToast("Todo reordered", "info");
+
+    // Maintain focus on the moved item
+    setTimeout(() => {
+      const dragHandle = document.querySelector(`[data-todo-id="${todoId}"] [data-testid="drag-handle"]`) as HTMLElement;
+      dragHandle?.focus();
+    }, 0);
   };
 
   return (
@@ -393,14 +560,33 @@ function TodoList() {
         </p>
       ) : (
         <ul className="todo-items" data-testid="todo-items">
-          {filteredTodos.map((todo) => {
+          {filteredTodos.map((todo, index) => {
             const todoIsOverdue = todo.dueDate && !todo.completed && isOverdue(todo.dueDate);
+            const isDragging = draggedId === todo.id;
+            const isDropTarget = dropTargetId === todo.id;
             return (
               <li
                 key={todo.id}
-                className={`todo-item ${todo.completed ? "completed" : ""} ${todoIsOverdue ? "todo-item-overdue" : ""}`}
+                data-todo-id={todo.id}
+                className={`todo-item ${todo.completed ? "completed" : ""} ${todoIsOverdue ? "todo-item-overdue" : ""} ${isDragging ? "todo-item-dragging" : ""} ${isDropTarget && dropPosition === "before" ? "todo-item-drop-before" : ""} ${isDropTarget && dropPosition === "after" ? "todo-item-drop-after" : ""}`}
                 data-testid="todo-item"
+                draggable
+                onDragStart={(e) => handleDragStart(e, todo.id)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => handleDragOver(e, todo.id)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, todo.id)}
               >
+                <span
+                  className="drag-handle"
+                  data-testid="drag-handle"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Reorder ${todo.text}. Use Alt+Arrow keys to move.`}
+                  onKeyDown={(e) => handleTodoKeyDown(e, todo.id, index)}
+                >
+                  ⋮⋮
+                </span>
                 <input
                   type="checkbox"
                   data-testid="todo-checkbox"
