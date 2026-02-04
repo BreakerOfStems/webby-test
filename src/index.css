@@ -1082,3 +1082,101 @@ main p {
   flex-wrap: wrap;
   gap: 0.25rem;
 }
+
+/* Drag Handle Styles */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  cursor: grab;
+  color: var(--text-color);
+  opacity: 0.4;
+  font-size: 1rem;
+  letter-spacing: -2px;
+  user-select: none;
+  border-radius: 4px;
+  transition: opacity 0.2s, background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.drag-handle:hover {
+  opacity: 0.8;
+  background: var(--counter-bg);
+}
+
+.drag-handle:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Dragging State */
+.todo-item-dragging {
+  opacity: 0.5;
+  background: var(--counter-bg);
+  border: 2px dashed #2563eb;
+}
+
+.todo-item-dragging .drag-handle {
+  cursor: grabbing;
+}
+
+/* Drop Zone Indicators */
+.todo-item-drop-before {
+  position: relative;
+}
+
+.todo-item-drop-before::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #2563eb;
+  border-radius: 2px;
+  animation: drop-indicator-pulse 0.5s ease-in-out infinite alternate;
+}
+
+.todo-item-drop-after {
+  position: relative;
+}
+
+.todo-item-drop-after::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #2563eb;
+  border-radius: 2px;
+  animation: drop-indicator-pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes drop-indicator-pulse {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Smooth reorder animation */
+.todo-item {
+  transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.3s ease;
+}
+
+/* Touch device support */
+@media (hover: none) {
+  .drag-handle {
+    opacity: 0.6;
+  }
+}
