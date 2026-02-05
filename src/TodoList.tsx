@@ -161,6 +161,8 @@ function TodoList() {
   const [dropTargetId, setDropTargetId] = useState<number | null>(null);
   const [dropPosition, setDropPosition] = useState<"before" | "after" | null>(null);
   const draggedRef = useRef<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState("");
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -390,6 +392,53 @@ function TodoList() {
 
   const deleteTodo = (id: number) => {
     setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  const startEdit = (id: number, currentText: string) => {
+    setEditingId(id);
+    setEditValue(currentText);
+  };
+
+  const saveEdit = (id: number) => {
+    const trimmedValue = editValue.trim();
+    if (!trimmedValue) {
+      // Revert to original text if empty
+      setEditingId(null);
+      setEditValue("");
+      return;
+    }
+
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, text: trimmedValue } : todo
+      )
+    );
+    setEditingId(null);
+    setEditValue("");
+    addToast("Todo updated successfully!", "success");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue("");
+  };
+
+  const handleDoubleClick = (id: number, currentText: string) => {
+    startEdit(id, currentText);
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent, id: number) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      saveEdit(id);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      cancelEdit();
+    }
+  };
+
+  const handleEditBlur = (id: number) => {
+    saveEdit(id);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -788,12 +837,26 @@ function TodoList() {
                         {CATEGORIES.find((c) => c.value === todo.category)?.label}
                       </span>
                     )}
-                    <span
-                      data-testid="todo-text"
-                      className={todo.completed ? "todo-completed" : ""}
-                    >
-                      {highlightMatch(todo.text)}
-                    </span>
+                    {editingId === todo.id ? (
+                      <input
+                        type="text"
+                        data-testid="todo-edit-input"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onKeyDown={(e) => handleEditKeyDown(e, todo.id)}
+                        onBlur={() => handleEditBlur(todo.id)}
+                        className="todo-edit-input"
+                        autoFocus
+                      />
+                    ) : (
+                      <span
+                        data-testid="todo-text"
+                        className={todo.completed ? "todo-completed" : ""}
+                        onDoubleClick={() => handleDoubleClick(todo.id, todo.text)}
+                      >
+                        {highlightMatch(todo.text)}
+                      </span>
+                    )}
                   </div>
                   {todo.dueDate && (
                     <span

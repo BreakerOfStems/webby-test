@@ -1,0 +1,157 @@
+name: "Todo Inline Edit Test Plan"
+description: "Test plan for inline editing functionality of todo items"
+
+tests:
+  - name: "Double-click enters edit mode"
+    description: "Verify that double-clicking on todo text enables inline editing"
+    steps:
+      - action: "Add a new todo item"
+        target: "[data-testid=todo-input]"
+        input: "Test todo item for editing"
+      - action: "Submit the todo"
+        target: "[data-testid=todo-add-btn]"
+        wait: 500
+      - action: "Double-click the todo text"
+        target: "[data-testid=todo-text]"
+        wait: 300
+      - action: "Verify edit input is visible and focused"
+        target: "[data-testid=todo-edit-input]"
+        expected: "visible and focused"
+      - action: "Verify original text is pre-filled"
+        target: "[data-testid=todo-edit-input]"
+        expected: "Test todo item for editing"
+
+  - name: "Enter key saves the edit"
+    description: "Verify that pressing Enter saves the edited text"
+    steps:
+      - action: "Add a new todo item"
+        target: "[data-testid=todo-input]"
+        input: "Original text"
+      - action: "Submit the todo"
+        target: "[data-testid=todo-add-btn]"
+        wait: 500
+      - action: "Double-click the todo text"
+        target: "[data-testid=todo-text]"
+        wait: 300
+      - action: "Clear input and type new text"
+        target: "[data-testid=todo-edit-input]"
+        input: "Modified text"
+      - action: "Press Enter"
+        target: "[data-testid=todo-edit-input]"
+        key: "Enter"
+        wait: 300
+      - action: "Verify text was updated"
+        target: "[data-testid=todo-text]"
+        expected: "Modified text"
+      - action: "Verify edit input is hidden"
+        target: "[data-testid=todo-edit-input]"
+        expected: "not visible"
+
+  - name: "Escape key cancels the edit"
+    description: "Verify that pressing Escape cancels the edit and restores original text"
+    steps:
+      - action: "Add a new todo item"
+        target: "[data-testid=todo-input]"
+        input: "Original text"
+      - action: "Submit the todo"
+        target: "[data-testid=todo-add-btn]"
+        wait: 500
+      - action: "Double-click the todo text"
+        target: "[data-testid=todo-text]"
+        wait: 300
+      - action: "Clear input and type new text"
+        target: "[data-testid=todo-edit-input]"
+        input: "Should be cancelled"
+      - action: "Press Escape"
+        target: "[data-testid=todo-edit-input]"
+        key: "Escape"
+        wait: 300
+      - action: "Verify original text is preserved"
+        target: "[data-testid=todo-text]"
+        expected: "Original text"
+      - action: "Verify edit input is hidden"
+        target: "[data-testid=todo-edit-input]"
+        expected: "not visible"
+
+  - name: "Blur (clicking away) saves the edit"
+    description: "Verify that clicking outside the edit input saves the changes"
+    steps:
+      - action: "Add a new todo item"
+        target: "[data-testid=todo-input]"
+        input: "Original text"
+      - action: "Submit the todo"
+        target: "[data-testid=todo-add-btn]"
+        wait: 500
+      - action: "Double-click the todo text"
+        target: "[data-testid=todo-text]"
+        wait: 300
+      - action: "Clear input and type new text"
+        target: "[data-testid=todo-edit-input]"
+        input: "Blur saved text"
+      - action: "Click away from input"
+        target: "[data-testid=todo-input-container]"
+        wait: 300
+      - action: "Verify text was updated"
+        target: "[data-testid=todo-text]"
+        expected: "Blur saved text"
+      - action: "Verify edit input is hidden"
+        target: "[data-testid=todo-edit-input]"
+        expected: "not visible"
+
+  - name: "Empty text reverts to original"
+    description: "Verify that empty input after editing reverts to original text"
+    steps:
+      - action: "Add a new todo item"
+        target: "[data-testid=todo-input]"
+        input: "Original text"
+      - action: "Submit the todo"
+        target: "[data-testid=todo-add-btn]"
+        wait: 500
+      - action: "Double-click the todo text"
+        target: "[data-testid=todo-text]"
+        wait: 300
+      - action: "Clear input completely"
+        target: "[data-testid=todo-edit-input]"
+        input: ""
+      - action: "Press Enter"
+        target: "[data-testid=todo-edit-input]"
+        key: "Enter"
+        wait: 300
+      - action: "Verify original text is preserved"
+        target: "[data-testid=todo-text]"
+        expected: "Original text"
+      - action: "Verify edit input is hidden"
+        target: "[data-testid=todo-edit-input]"
+        expected: "not visible"
+
+  - name: "Edit input styling and accessibility"
+    description: "Verify proper styling and accessibility of edit input"
+    steps:
+      - action: "Add a new todo item"
+        target: "[data-testid=todo-input]"
+        input: "Test styling"
+      - action: "Submit the todo"
+        target: "[data-testid=todo-add-btn]"
+        wait: 500
+      - action: "Double-click the todo text"
+        target: "[data-testid=todo-text]"
+        wait: 300
+      - action: "Verify edit input has proper testid"
+        target: "[data-testid=todo-edit-input]"
+        expected: "visible"
+      - action: "Verify input is auto-focused"
+        target: "[data-testid=todo-edit-input]:focus"
+        expected: "visible"
+      - action: "Verify input has todo-edit-input class"
+        target: "[data-testid=todo-edit-input].todo-edit-input"
+        expected: "visible"
+
+acceptance_criteria:
+  - "Double-click on todo text enters edit mode"
+  - "Enter saves the edited text"
+  - "Escape cancels the edit"
+  - "Blur (clicking away) saves the edit"
+  - "Empty text after editing is not allowed (revert to original)"
+  - "Edit input has data-testid='todo-edit-input'"
+  - "Edit input is auto-focused when entering edit mode"
+  - "Only one todo can be edited at a time"
