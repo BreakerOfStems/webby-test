@@ -3,6 +3,7 @@ import { useToast } from "./ToastContext";
 import TodoStats from "./TodoStats";
 
 type CategoryType = "work" | "personal" | "shopping" | "health" | "other";
+type PriorityType = "high" | "medium" | "low";
 
 interface Todo {
   id: number;
@@ -10,6 +11,7 @@ interface Todo {
   completed: boolean;
   dueDate?: string; // ISO date string
   category?: CategoryType;
+  priority: PriorityType;
 }
 
 const CATEGORIES: { value: CategoryType; label: string }[] = [
@@ -20,8 +22,16 @@ const CATEGORIES: { value: CategoryType; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+const PRIORITIES: { value: PriorityType; label: string; emoji: string }[] = [
+  { value: "high", label: "High", emoji: "🔴" },
+  { value: "medium", label: "Medium", emoji: "🟡" },
+  { value: "low", label: "Low", emoji: "🟢" },
+];
+
 type FilterType = "all" | "active" | "completed";
 type DueDateFilterType = "all" | "today" | "overdue" | "upcoming";
+type PriorityFilterType = "all" | "high" | "medium-plus" | "high-only";
+type SortType = "manual" | "priority" | "dueDate" | "created";
 
 // Helper function to get start of day in local timezone
 function getStartOfDay(date: Date): Date {
@@ -69,6 +79,16 @@ function isOverdue(dueDate: string): boolean {
   return due.getTime() < today.getTime();
 }
 
+// Helper function to get priority order (high = 0, medium = 1, low = 2)
+function getPriorityOrder(priority: PriorityType): number {
+  switch (priority) {
+    case "high": return 0;
+    case "medium": return 1;
+    case "low": return 2;
+    default: return 2;
+  }
+}
+
 // Helper function to format date in a relative, readable format
 function formatRelativeDate(dateString: string): string {
   const date = new Date(dateString);
@@ -93,11 +113,20 @@ const ORDER_STORAGE_KEY = "todo-order";
 const FILTER_STORAGE_KEY = "todo-filter";
 const DUE_DATE_FILTER_STORAGE_KEY = "todo-due-date-filter";
 const CATEGORY_FILTER_STORAGE_KEY = "todo-category-filter";
+const PRIORITY_FILTER_STORAGE_KEY = "todo-priority-filter";
+const SORT_STORAGE_KEY = "todo-sort";
 
 function TodoList() {
   const [todos, setTodos] = useState<Todo[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+
+    const parsedTodos = JSON.parse(saved);
+    // Migration: add default priority to existing todos
+    return parsedTodos.map((todo: any) => ({
+      ...todo,
+      priority: todo.priority || "low"
+    }));
   });
   const [inputValue, setInputValue] = useState("");
   const [dueDateValue, setDueDateValue] = useState("");
@@ -115,6 +144,15 @@ function TodoList() {
     const saved = localStorage.getItem(CATEGORY_FILTER_STORAGE_KEY);
     return (saved as CategoryType | "all") || "all";
   });
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilterType>(() => {
+    const saved = localStorage.getItem(PRIORITY_FILTER_STORAGE_KEY);
+    return (saved as PriorityFilterType) || "all";
+  });
+  const [sortBy, setSortBy] = useState<SortType>(() => {
+    const saved = localStorage.getItem(SORT_STORAGE_KEY);
+    return (saved as SortType) || "manual";
+  });
+  const [priorityValue, setPriorityValue] = useState<PriorityType>("low");
   const [todoOrder, setTodoOrder] = useState<number[]>(() => {
     const saved = localStorage.getItem(ORDER_STORAGE_KEY);
     return saved ? JSON.parse(saved) : [];
@@ -142,31 +180,73 @@ function TodoList() {
   }, [categoryFilter]);
 
   useEffect(() => {
+    localStorage.setItem(PRIORITY_FILTER_STORAGE_KEY, priorityFilter);
+  }, [priorityFilter]);
+
+  useEffect(() => {
+    localStorage.setItem(SORT_STORAGE_KEY, sortBy);
+  }, [sortBy]);
+
+  useEffect(() => {
     localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(todoOrder));
   }, [todoOrder]);
 
-  // Sort todos by the stored order
+  // Sort todos by the selected sorting method
   const orderedTodos = useMemo(() => {
-    // Create a map of id -> order index
-    const orderMap = new Map<number, number>();
-    todoOrder.forEach((id, index) => orderMap.set(id, index));
+    const sortedTodos = [...todos];
 
-    // Sort todos: items in order first (by their position), then items not in order (newest first, at top)
-    return [...todos].sort((a, b) => {
-      const aInOrder = orderMap.has(a.id);
-      const bInOrder = orderMap.has(b.id);
-
-      if (!aInOrder && !bInOrder) {
-        // Both are new - newer items (higher id) come first (at top)
+    if (sortBy === "priority") {
+      sortedTodos.sort((a, b) => {
+        // First sort by priority (high -> medium -> low)
+        const aPriority = getPriorityOrder(a.priority);
+        const bPriority = getPriorityOrder(b.priority);
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+        // Then by creation date (newest first)
         return b.id - a.id;
-      }
-      if (!aInOrder) return -1; // a is new, goes to top
-      if (!bInOrder) return 1;  // b is new, goes to top
+      });
+    } else if (sortBy === "dueDate") {
+      sortedTodos.sort((a, b) => {
+        // Items with due dates first, sorted by date
+        if (a.dueDate && !b.dueDate) return -1;
+        if (!a.dueDate && b.dueDate) return 1;
+        if (a.dueDate && b.dueDate) {
+          const aDate = new Date(a.dueDate).getTime();
+          const bDate = new Date(b.dueDate).getTime();
+          if (aDate !== bDate) {
+            return aDate - bDate;
+          }
+        }
+        // Then by creation date (newest first)
+        return b.id - a.id;
+      });
+    } else if (sortBy === "created") {
+      sortedTodos.sort((a, b) => b.id - a.id); // Newest first
+    } else if (sortBy === "manual") {
+      // Create a map of id -> order index
+      const orderMap = new Map<number, number>();
+      todoOrder.forEach((id, index) => orderMap.set(id, index));
 
-      // Both have order - sort by order
-      return orderMap.get(a.id)! - orderMap.get(b.id)!;
-    });
-  }, [todos, todoOrder]);
+      // Sort todos: items in order first (by their position), then items not in order (newest first, at top)
+      sortedTodos.sort((a, b) => {
+        const aInOrder = orderMap.has(a.id);
+        const bInOrder = orderMap.has(b.id);
+
+        if (!aInOrder && !bInOrder) {
+          // Both are new - newer items (higher id) come first (at top)
+          return b.id - a.id;
+        }
+        if (!aInOrder) return -1; // a is new, goes to top
+        if (!bInOrder) return 1;  // b is new, goes to top
+
+        // Both have order - sort by order
+        return orderMap.get(a.id)! - orderMap.get(b.id)!;
+      });
+    }
+
+    return sortedTodos;
+  }, [todos, todoOrder, sortBy]);
 
   const filteredTodos = useMemo(() => {
     return orderedTodos.filter((todo) => {
@@ -200,9 +280,21 @@ function TodoList() {
       const matchesCategoryFilter =
         categoryFilter === "all" || todo.category === categoryFilter;
 
-      return matchesSearch && matchesFilter && matchesDueDateFilter && matchesCategoryFilter;
+      // Priority filter logic
+      let matchesPriorityFilter = true;
+      if (priorityFilter !== "all") {
+        if (priorityFilter === "high-only") {
+          matchesPriorityFilter = todo.priority === "high";
+        } else if (priorityFilter === "medium-plus") {
+          matchesPriorityFilter = todo.priority === "high" || todo.priority === "medium";
+        } else if (priorityFilter === "high") {
+          matchesPriorityFilter = todo.priority === "high";
+        }
+      }
+
+      return matchesSearch && matchesFilter && matchesDueDateFilter && matchesCategoryFilter && matchesPriorityFilter;
     });
-  }, [orderedTodos, searchQuery, filter, dueDateFilter, categoryFilter]);
+  }, [orderedTodos, searchQuery, filter, dueDateFilter, categoryFilter, priorityFilter]);
 
   const counts = useMemo(() => {
     const searchFiltered = todos.filter((todo) =>
@@ -214,6 +306,26 @@ function TodoList() {
       completed: searchFiltered.filter((t) => t.completed).length,
     };
   }, [todos, searchQuery]);
+
+  const priorityCounts = useMemo(() => {
+    const searchFiltered = todos.filter((todo) => {
+      const matchesSearch = todo.text.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter =
+        filter === "all" ||
+        (filter === "active" && !todo.completed) ||
+        (filter === "completed" && todo.completed);
+      const matchesCategoryFilter =
+        categoryFilter === "all" || todo.category === categoryFilter;
+      return matchesSearch && matchesFilter && matchesCategoryFilter;
+    });
+
+    return {
+      all: searchFiltered.length,
+      high: searchFiltered.filter((t) => t.priority === "high").length,
+      medium: searchFiltered.filter((t) => t.priority === "medium").length,
+      low: searchFiltered.filter((t) => t.priority === "low").length,
+    };
+  }, [todos, searchQuery, filter, categoryFilter]);
 
   const dueDateCounts = useMemo(() => {
     const searchFiltered = todos.filter((todo) =>
@@ -258,11 +370,13 @@ function TodoList() {
       completed: false,
       dueDate: dueDateValue || undefined,
       category: categoryValue || undefined,
+      priority: priorityValue,
     };
     setTodos([...todos, newTodo]);
     setInputValue("");
     setDueDateValue("");
     setCategoryValue("");
+    setPriorityValue("low");
     addToast("Todo item added successfully!", "success");
   };
 
@@ -417,7 +531,18 @@ function TodoList() {
 
   return (
     <div className="todo-list" data-testid="todo-list">
-      <h3>Todo List</h3>
+      <div className="todo-list-header">
+        <h3>Todo List</h3>
+        {priorityCounts.high > 0 && (
+          <span
+            className="high-priority-badge"
+            data-testid="high-priority-badge"
+            title={`${priorityCounts.high} high priority item${priorityCounts.high > 1 ? 's' : ''}`}
+          >
+            🔴 {priorityCounts.high}
+          </span>
+        )}
+      </div>
       <TodoStats todos={todos} />
       <div className="todo-search-filter-row" data-testid="todo-search-filter-row">
         <div className="todo-search-input-wrapper">
@@ -509,6 +634,47 @@ function TodoList() {
           Upcoming ({dueDateCounts.upcoming})
         </button>
       </div>
+      <div className="todo-sort-priority-container" data-testid="todo-sort-priority-container">
+        <div className="todo-sort-container">
+          <label htmlFor="sort-select" className="todo-sort-label">Sort by:</label>
+          <select
+            id="sort-select"
+            data-testid="sort-select"
+            className="todo-sort-select"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortType)}
+          >
+            <option value="manual">Manual</option>
+            <option value="priority">Priority</option>
+            <option value="dueDate">Due Date</option>
+            <option value="created">Created</option>
+          </select>
+        </div>
+        <div className="todo-priority-filter-container">
+          <span className="todo-priority-filter-label">Priority:</span>
+          <button
+            data-testid="priority-filter-all"
+            className={`todo-filter-btn ${priorityFilter === "all" ? "active" : ""}`}
+            onClick={() => setPriorityFilter("all")}
+          >
+            All Priorities
+          </button>
+          <button
+            data-testid="priority-filter-high-only"
+            className={`todo-filter-btn todo-filter-btn-high ${priorityFilter === "high-only" ? "active" : ""}`}
+            onClick={() => setPriorityFilter("high-only")}
+          >
+            🔴 High Only ({priorityCounts.high})
+          </button>
+          <button
+            data-testid="priority-filter-medium-plus"
+            className={`todo-filter-btn ${priorityFilter === "medium-plus" ? "active" : ""}`}
+            onClick={() => setPriorityFilter("medium-plus")}
+          >
+            Medium+ ({priorityCounts.high + priorityCounts.medium})
+          </button>
+        </div>
+      </div>
       <div className="todo-input-container">
         <input
           type="text"
@@ -528,6 +694,18 @@ function TodoList() {
           {CATEGORIES.map((cat) => (
             <option key={cat.value} value={cat.value}>
               {cat.label}
+            </option>
+          ))}
+        </select>
+        <select
+          data-testid="priority-select"
+          className="todo-priority-select"
+          value={priorityValue}
+          onChange={(e) => setPriorityValue(e.target.value as PriorityType)}
+        >
+          {PRIORITIES.map((priority) => (
+            <option key={priority.value} value={priority.value}>
+              {priority.emoji} {priority.label}
             </option>
           ))}
         </select>
@@ -554,7 +732,7 @@ function TodoList() {
           Add
         </button>
       </div>
-      {filteredTodos.length === 0 && (searchQuery || filter !== "all" || dueDateFilter !== "all" || categoryFilter !== "all") ? (
+      {filteredTodos.length === 0 && (searchQuery || filter !== "all" || dueDateFilter !== "all" || categoryFilter !== "all" || priorityFilter !== "all") ? (
         <p className="todo-no-results" data-testid="todo-no-results">
           No matching todos found
         </p>
@@ -595,6 +773,13 @@ function TodoList() {
                 />
                 <div className="todo-item-content">
                   <div className="todo-text-container">
+                    <span
+                      data-testid={`priority-indicator-${todo.priority}`}
+                      className={`priority-indicator priority-indicator-${todo.priority}`}
+                      title={`Priority: ${PRIORITIES.find(p => p.value === todo.priority)?.label}`}
+                    >
+                      {PRIORITIES.find(p => p.value === todo.priority)?.emoji}
+                    </span>
                     {todo.category && (
                       <span
                         data-testid={`category-tag-${todo.category}`}
