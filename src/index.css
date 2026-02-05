@@ -374,6 +374,25 @@ main p {
   background: #dc2626;
 }
 
+/* Todo Edit Input Styles */
+.todo-edit-input {
+  flex: 1;
+  padding: 0.375rem 0.5rem;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 1px solid #2563eb;
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.todo-edit-input:focus {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
 .contact-form {
   margin-top: 2rem;
   padding: 1.5rem;
